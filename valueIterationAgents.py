@@ -206,5 +206,68 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
 
     def runValueIteration(self):
-        "*** YOUR CODE HERE ***"
+        states = self.mdp.getStates()
+        """Populate Predecessors"""
+        predecessors = {}
+        for state in states:
+            predecessors[state] = set()
+
+        """Computer Predecessors"""
+        for predecessor in states:
+            actions = self.mdp.getPossibleActions(predecessor)
+            for action in actions:
+                for (newState, prob) in self.mdp.getTransitionStatesAndProbs(predecessor, action):
+                    if newState not in predecessors and prob > 0:
+                        predecessors[newState] = predecessor
+
+        """priority queue"""
+        PriorityQueue = util.PriorityQueue()
+
+        """Terminal state thingy"""
+        for s in states:
+            if mdp.isTerminal(s):
+                continue
+            actions = self.mdp.getPossibleActions(s)
+            bestQ = float("-inf")
+            for action in actions:
+                q = self.computeQValueFromValues(s, action)
+                if q > bestQ:
+                    bestQ = q
+            diff = abs(self.values[s] - bestQ)
+            PriorityQueue.push(s, -diff)
+
+            for interation in range(self.iterations):
+                if PriorityQueue.isEmpty():
+                    break
+                s = PriorityQueue.pop()
+
+                bestQ = float("-inf")
+                for action in actions:
+                    q = self.computeQValueFromValues(s, action)
+                    if q > bestQ:
+                        bestQ = q
+
+                if not self.mdp.isTerminal(s):
+                    self.values[s] = bestQ
+
+                for predecessor in predecessors[s]:
+                    if not self.mdp.isTerminal(predecessor):
+                        bestQ = float("-inf")
+                        for action in actions:
+                            q = self.computeQValueFromValues(s, action)
+                            if q > bestQ:
+                                bestQ = q
+
+                        diff = abs(self.values[predecessors] - bestQ)
+
+                        if diff < self.theta:
+                            PriorityQueue.update(s, -diff)
+
+
+
+
+
+
+
+
 
