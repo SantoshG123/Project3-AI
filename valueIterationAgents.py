@@ -217,15 +217,15 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
             actions = self.mdp.getPossibleActions(predecessor)
             for action in actions:
                 for (newState, prob) in self.mdp.getTransitionStatesAndProbs(predecessor, action):
-                    if newState not in predecessors and prob > 0:
-                        predecessors[newState] = predecessor
+                    if prob > 0:
+                        predecessors[newState].add(predecessor)
 
         """priority queue"""
-        PriorityQueue = util.PriorityQueue()
+        priorityQueue = util.PriorityQueue()
 
         """Terminal state thingy"""
         for s in states:
-            if mdp.isTerminal(s):
+            if self.mdp.isTerminal(s):
                 continue
             actions = self.mdp.getPossibleActions(s)
             bestQ = float("-inf")
@@ -234,34 +234,40 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                 if q > bestQ:
                     bestQ = q
             diff = abs(self.values[s] - bestQ)
-            PriorityQueue.push(s, -diff)
+            priorityQueue.push(s, -diff)
 
-            for interation in range(self.iterations):
-                if PriorityQueue.isEmpty():
-                    break
-                s = PriorityQueue.pop()
+        for interation in range(self.iterations):
+            if priorityQueue.isEmpty():
+                break
+            s = priorityQueue.pop()
 
-                bestQ = float("-inf")
-                for action in actions:
-                    q = self.computeQValueFromValues(s, action)
-                    if q > bestQ:
-                        bestQ = q
-
-                if not self.mdp.isTerminal(s):
+            if not self.mdp.isTerminal(s):
+                actions = self.mdp.getPossibleActions(s)
+                if len(actions) == 0:
+                    self.values[s] = 0
+                else:
+                    bestQ = float("-inf")
+                    for action in actions:
+                        q = self.computeQValueFromValues(s, action)
+                        if q > bestQ:
+                            bestQ = q
                     self.values[s] = bestQ
 
-                for predecessor in predecessors[s]:
-                    if not self.mdp.isTerminal(predecessor):
+            for predecessor in predecessors[s]:
+                if not self.mdp.isTerminal(predecessor):
+                    actions = self.mdp.getPossibleActions(predecessor)
+                    if len(actions) == 0:
+                        bestQ = 0
+                    else:
                         bestQ = float("-inf")
-                        for action in actions:
-                            q = self.computeQValueFromValues(s, action)
+                        for a in actions:
+                            q = self.computeQValueFromValues(predecessor, a)
                             if q > bestQ:
                                 bestQ = q
 
-                        diff = abs(self.values[predecessors] - bestQ)
-
-                        if diff < self.theta:
-                            PriorityQueue.update(s, -diff)
+                    diff = abs(self.values[predecessor] - bestQ)
+                    if diff > self.theta:
+                        priorityQueue.update(predecessor, -diff)
 
 
 
