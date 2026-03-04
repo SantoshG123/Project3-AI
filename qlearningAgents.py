@@ -17,7 +17,10 @@ from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
 import random,util,math
-
+"""
+AI CITATION
+For making this class we used GPT to help us write it with the prompt of question of 6 & 7, and it gave us the following code which matches what our thinking was for how to implement the QLearningAgent.
+"""
 class QLearningAgent(ReinforcementAgent):
     """
       Q-Learning Agent
@@ -168,7 +171,10 @@ class PacmanQAgent(QLearningAgent):
         self.doAction(state,action)
         return action
 
-
+"""
+AI CITATION
+For making this class we asked GPT that given the specifications in question 10 if it could help us write the code for the ApproximateQAgent, and it gave us the following code which matches what our thinking was for how to implement the ApproximateQAgent.
+"""
 class ApproximateQAgent(PacmanQAgent):
     """
        ApproximateQLearningAgent
